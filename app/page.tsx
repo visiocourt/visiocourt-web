@@ -577,4 +577,8 @@ export default function VisioCourtApp() {
       </div>
     </div>
   );
-}
+}<footer className="mt-12 text-center text-sm text-gray-400">
+<p>
+  By joining the waitlist, you agree to our <a href="/privacy" className="underline">Privacy Policy</a>.
+</p>
+</footer>
