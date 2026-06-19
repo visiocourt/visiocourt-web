@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+/* ----------------------------------------------------------------------------
+   VisioCourt design tokens — Light mode
+   Elite minimalist tech aesthetic: pure white canvas, ultra-thin zinc-200
+   borders, sharp slate/charcoal typography, glowing teal/cyan accents.
+---------------------------------------------------------------------------- */
+:root {
+  --background: #ffffff;
+  --surface: #fafafa; /* zinc-50 */
+  --foreground: #0f172a; /* slate-900 */
+  --muted: #475569; /* slate-600 */
+  --border: #e4e4e7; /* zinc-200 */
+  --accent: #14b8a6; /* teal-500 */
+
+  --color-open: #14b8a6; /* teal-500 */
+  --color-occupied: #f59e0b; /* amber-500 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-rise: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in-up: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-ring {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+html {
+  color-scheme: light;
+  /* Smooth anchored navigation, offset for the fixed navigation bar. */
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Each anchor target clears the fixed navbar when scrolled into view. */
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
+/* Whisper-soft technical grid backdrop for the hero. */
+.grid-backdrop {
+  background-image:
+    linear-gradient(to right, rgba(228, 228, 231, 0.6) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(228, 228, 231, 0.6) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 55% at 50% 0%,
+    #000 35%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 80% 55% at 50% 0%,
+    #000 35%,
+    transparent 100%
+  );
+}
+
+::selection {
+  background: rgba(20, 184, 166, 0.18);
+  color: #0f172a;
+}
+
+/* Restrained, on-brand focus ring in teal. */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px rgba(20, 184, 166, 0.5);
+}
+/* ----------------------------------------------------------------------------
+   Home schematic motion. A faint technical grid drifts beneath abstract court
+   shapes that slowly pulse, suggesting continuous on device AI scanning.
+---------------------------------------------------------------------------- */
+.background-grid-animate {
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.07) 1px, transparent 1px);
+  background-size: 36px 36px;
+  animation: background-drift 24s linear infinite;
+}
+
+@keyframes background-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 36px 36px;
+  }
+}
+
+.data-field-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: field-pulse 4.5s ease-in-out infinite;
+}
+
+@keyframes field-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.992);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.012);
+  }
+}
+
+/* Respect users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .background-grid-animate,
+  .data-field-pulse {
+    animation: none;
+  }
+}
