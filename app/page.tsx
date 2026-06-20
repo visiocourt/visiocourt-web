@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function VisioCourtApp() {
   const [activeTab, setActiveTab] = useState<'home' | 'demo' | 'analytics' | 'contact'>('home');
@@ -571,14 +572,17 @@ export default function VisioCourtApp() {
           </span>
           <div className="flex space-x-6 relative z-40">
             <span className="hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer">Security Standards</span>
-            <span className="hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer">Privacy Guidelines</span>
+            <Link href="/privacy" className="hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer">Privacy Policy</Link>
           </div>
         </footer>
       </div>
+
+      <footer className="py-8 text-center text-sm text-gray-500">
+        <p>&copy; 2026 VisioCourt. All rights reserved.</p>
+        <Link href="/privacy" className="hover:underline">
+          Privacy Policy
+        </Link>
+      </footer>
     </div>
   );
-}<footer className="mt-12 text-center text-sm text-gray-400">
-<p>
-  By joining the waitlist, you agree to our <a href="/privacy" className="underline">Privacy Policy</a>.
-</p>
-</footer>
+}
