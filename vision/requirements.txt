@@ -1,0 +1,13 @@
+# CourtSense edge vision pipeline
+# Tested against Python 3.9 - 3.12 (Raspberry Pi OS Bookworm)
+
+# Core computer vision + numerics
+numpy>=1.24,<2.2
+opencv-python>=4.8 ; platform_machine != "armv7l"
+# On 32-bit Pi OS use the headless wheel instead:
+#   pip install opencv-python-headless
+
+# Person detection / pose. Ultralytics ships YOLO11.
+# The pipeline degrades gracefully (mock detector) when this is absent,
+# so you can develop the geometry on a laptop without the model.
+ultralytics>=8.3 ; platform_machine != "armv7l"

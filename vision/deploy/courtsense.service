@@ -1,0 +1,37 @@
+# CourtSense systemd unit: runs court occupancy headless on boot and restarts
+# on failure. Edit the paths/args, then install:
+#
+#   sudo mkdir -p /var/log/courtsense
+#   sudo cp deploy/courtsense.service /etc/systemd/system/courtsense.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now courtsense.service
+#   journalctl -u courtsense -f        # follow logs
+#
+# Adjust User, WorkingDirectory, and the ExecStart flags to match your install
+# (config path, camera id, source, model). Use --source picamera for the CSI
+# camera, or a USB index like --source 0.
+
+[Unit]
+Description=CourtSense court occupancy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/visiocourt-web/vision
+ExecStart=/home/pi/visiocourt-web/vision/.venv/bin/python court_occupancy.py \
+  --config courts/court-1.json \
+  --camera-id cam-a \
+  --source picamera \
+  --model yolo11n_ncnn_model \
+  --mode detect \
+  --fps 2 \
+  --json-out /var/log/courtsense/readings.jsonl
+Restart=always
+RestartSec=5
+# Let the camera/GPU settle before the first frame.
+TimeoutStartSec=60
+
+[Install]
+WantedBy=multi-user.target
