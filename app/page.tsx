@@ -8,6 +8,56 @@ export default function VisioCourtApp() {
   const [isMounted, setIsMounted] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+  // Waitlist email verification (6 digit code) flow
+  const [wlEmail, setWlEmail] = useState('');
+  const [wlCode, setWlCode] = useState('');
+  const [wlToken, setWlToken] = useState('');
+  const [wlStep, setWlStep] = useState<'idle' | 'code' | 'done'>('idle');
+  const [wlError, setWlError] = useState('');
+  const [wlLoading, setWlLoading] = useState(false);
+
+  const startWaitlist = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    setWlError('');
+    setWlLoading(true);
+    try {
+      const res = await fetch('/api/waitlist/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: wlEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+      setWlToken(data.token);
+      setWlCode('');
+      setWlStep('code');
+    } catch (err) {
+      setWlError(err instanceof Error ? err.message : 'Something went wrong.');
+    } finally {
+      setWlLoading(false);
+    }
+  };
+
+  const verifyWaitlist = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    setWlError('');
+    setWlLoading(true);
+    try {
+      const res = await fetch('/api/waitlist/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: wlEmail, code: wlCode, token: wlToken }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Invalid code.');
+      setWlStep('done');
+    } catch (err) {
+      setWlError(err instanceof Error ? err.message : 'Invalid code.');
+    } finally {
+      setWlLoading(false);
+    }
+  };
+
   // Live state simulator for your athletic facility monitor preview
   const [courtStates, setCourtStates] = useState([
     { id: 1, name: 'Indoor Court 1', status: 'Occupied', time: '42 Minutes Active', color: 'amber' },
@@ -202,23 +252,75 @@ export default function VisioCourtApp() {
                 </div>
 
                 <div className="space-y-3 max-w-md animate-cascade delay-3">
-                  {/* FORMSPREE: WIRED WAITLIST EMAIL CAPTURE */}
-                  <form action="https://formspree.io/f/xzdqnawr" method="POST" className="flex flex-col sm:flex-row gap-3">
-                    <input
-                      type="email"
-                      name="email"
-                      required
-                      placeholder="Enter your email address"
-                      className={`flex-grow px-5 py-3 rounded-xl border text-sm focus:outline-none focus:border-[#5ac3dc] transition-all duration-200 ${
-                        isDarkMode ? 'border-zinc-800 bg-zinc-900 text-white placeholder-zinc-600' : 'border-zinc-200 bg-white text-zinc-900 placeholder-zinc-400'
-                      }`}
-                    />
-                    <button type="submit" className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-md whitespace-nowrap ${
-                      isDarkMode ? 'bg-white text-zinc-950 hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'
+                  {/* WAITLIST EMAIL CAPTURE WITH 6 DIGIT VERIFICATION */}
+                  {wlStep === 'idle' && (
+                    <form onSubmit={startWaitlist} className="flex flex-col sm:flex-row gap-3">
+                      <input
+                        type="email"
+                        value={wlEmail}
+                        onChange={(e) => setWlEmail(e.target.value)}
+                        required
+                        placeholder="Enter your email address"
+                        className={`flex-grow px-5 py-3 rounded-xl border text-sm focus:outline-none focus:border-[#5ac3dc] transition-all duration-200 ${
+                          isDarkMode ? 'border-zinc-800 bg-zinc-900 text-white placeholder-zinc-600' : 'border-zinc-200 bg-white text-zinc-900 placeholder-zinc-400'
+                        }`}
+                      />
+                      <button type="submit" disabled={wlLoading} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-md whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed ${
+                        isDarkMode ? 'bg-white text-zinc-950 hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'
+                      }`}>
+                        {wlLoading ? 'Sending code…' : 'Join Waitlist'}
+                      </button>
+                    </form>
+                  )}
+
+                  {wlStep === 'code' && (
+                    <form onSubmit={verifyWaitlist} className="flex flex-col gap-3">
+                      <p className={`text-sm ${isDarkMode ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                        We sent a 6 digit code to <span className="font-semibold">{wlEmail}</span>. Enter it below to confirm your email.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <input
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          maxLength={6}
+                          value={wlCode}
+                          onChange={(e) => setWlCode(e.target.value.replace(/\D/g, ''))}
+                          required
+                          placeholder="123456"
+                          className={`flex-grow px-5 py-3 rounded-xl border text-sm font-mono tracking-[0.4em] focus:outline-none focus:border-[#5ac3dc] transition-all duration-200 ${
+                            isDarkMode ? 'border-zinc-800 bg-zinc-900 text-white placeholder-zinc-600' : 'border-zinc-200 bg-white text-zinc-900 placeholder-zinc-400'
+                          }`}
+                        />
+                        <button type="submit" disabled={wlLoading || wlCode.length !== 6} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-md whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed ${
+                          isDarkMode ? 'bg-white text-zinc-950 hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'
+                        }`}>
+                          {wlLoading ? 'Verifying…' : 'Verify Email'}
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <button type="button" onClick={() => startWaitlist()} disabled={wlLoading} className="text-xs text-zinc-400 hover:text-[#5ac3dc] transition-colors">
+                          Resend code
+                        </button>
+                        <button type="button" onClick={() => { setWlStep('idle'); setWlError(''); }} className="text-xs text-zinc-400 hover:text-[#5ac3dc] transition-colors">
+                          Use a different email
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {wlStep === 'done' && (
+                    <div className={`flex items-center gap-2.5 px-5 py-3.5 rounded-xl border text-sm font-medium ${
+                      isDarkMode ? 'border-[#5ac3dc]/30 bg-[#5ac3dc]/10 text-[#5ac3dc]' : 'border-[#5ac3dc]/30 bg-[#5ac3dc]/10 text-[#2a8fa6]'
                     }`}>
-                      Join Waitlist
-                    </button>
-                  </form>
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#5ac3dc]" />
+                      Email verified. You are on the VisioCourt waitlist.
+                    </div>
+                  )}
+
+                  {wlError && (
+                    <p className="text-xs font-medium text-red-500">{wlError}</p>
+                  )}
+
                   <p className="text-xs text-zinc-400 font-medium pt-1">
                     Corporate & facility pilot programs also available.
                   </p>
